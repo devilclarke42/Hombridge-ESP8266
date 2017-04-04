@@ -6,11 +6,11 @@
 
 // Update these with values suitable for your network.
 const char* ssid = "xxxxxxxx";
-const char* password = "xxxxxxxxxx";
-const char* mqtt_server = "xxxxxxxx";
+const char* password = "xxxxxxx";
+const char* mqtt_server = "111.111.111.111";
 
 //Update this with the name of device.
-const char* device = "lincoln's_lamp"; 
+String device = "lincoln's_lamp"; 
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -21,9 +21,7 @@ int value = 0;
 int correct_device = 0;
 int Last_State = 0;
 int addr = 0;
-int inputPin  = D3; //Hardware button for local switching (If You Use another pin please add 10K pull up)
 String content = "";
-
 
 void setup_wifi() {
 
@@ -97,7 +95,7 @@ void reconnect() {
       // Once connected, publish an announcement...
       client.publish("Heartbeat", "hello world");
       // ... and resubscribe
-      client.subscribe("Lamps");
+      client.subscribe("inTopic");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -110,7 +108,6 @@ void reconnect() {
 
 void setup() {
   EEPROM.begin(512);
-  pinMode(inputPin, INPUT);
   pinMode(BUILTIN_LED, OUTPUT);  // initialize onboard LED as output
   digitalWrite(BUILTIN_LED, HIGH); //eleminates flicker
 
@@ -135,33 +132,9 @@ void loop() {
   }
   client.loop();
 
-//This allows the lamp to be turned on and off localy with a button
-  
-  if (digitalRead(inputPin) == LOW && char(EEPROM.read(addr)) == '0') {
-    Serial.println(device);
-    Serial.println("ON");
-    EEPROM.write(addr, '1');
-    EEPROM.commit();
-    correct_device = 0;
-    client.publish(device, "On");
-    digitalWrite(BUILTIN_LED, LOW);  // turn on LED and RELAY with voltage LOW
-    delay(1000);
-  }
-
-  if (digitalRead(inputPin) == LOW && char(EEPROM.read(addr)) == '1') {
-    Serial.println(device);
-    Serial.println("OFF");
-    EEPROM.write(addr, '0');
-    EEPROM.commit();
-    correct_device = 0;
-    client.publish(device, "Off");
-    digitalWrite(BUILTIN_LED, HIGH);  // turn off LED and RELAY with voltage HIGH
-    delay(1000);
-  }
-
 // This is Debug (Heartbeat) for testing purposes 
   long now = millis();
-  if (now - lastMsg > 1000) {
+  if (now - lastMsg > 2000) {
     lastMsg = now;
     ++value;
     snprintf (msg, 75, "hello world #%ld", value);
